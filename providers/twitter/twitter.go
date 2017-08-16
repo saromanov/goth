@@ -9,11 +9,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"fmt"
-
 	"github.com/markbates/goth"
 	"github.com/mrjones/oauth"
 	"golang.org/x/oauth2"
+	"fmt"
 )
 
 var (
@@ -31,10 +30,10 @@ var (
 // If you'd like to use authenticate instead of authorize, use NewAuthenticate instead.
 func New(clientKey, secret, callbackURL string) *Provider {
 	p := &Provider{
-		ClientKey:    clientKey,
-		Secret:       secret,
-		CallbackURL:  callbackURL,
-		providerName: "twitter",
+		ClientKey:           clientKey,
+		Secret:              secret,
+		CallbackURL:         callbackURL,
+		providerName:        "twitter",
 	}
 	p.consumer = newConsumer(p, authorizeURL)
 	return p
@@ -44,10 +43,10 @@ func New(clientKey, secret, callbackURL string) *Provider {
 // NewAuthenticate uses the authenticate URL instead of the authorize URL.
 func NewAuthenticate(clientKey, secret, callbackURL string) *Provider {
 	p := &Provider{
-		ClientKey:    clientKey,
-		Secret:       secret,
-		CallbackURL:  callbackURL,
-		providerName: "twitter",
+		ClientKey:           clientKey,
+		Secret:              secret,
+		CallbackURL:         callbackURL,
+		providerName:        "twitter",
 	}
 	p.consumer = newConsumer(p, authenticateURL)
 	return p
@@ -88,7 +87,7 @@ func (p *Provider) Debug(debug bool) {
 func (p *Provider) BeginAuth(state string) (goth.Session, error) {
 	requestToken, url, err := p.consumer.GetRequestTokenAndUrl(p.CallbackURL)
 	session := &Session{
-		AuthURL:      url,
+		AuthURL:      url + "&state=" + state,
 		RequestToken: requestToken,
 	}
 	return session, err
@@ -127,9 +126,7 @@ func (p *Provider) FetchUser(session goth.Session) (goth.User, error) {
 
 	user.Name = user.RawData["name"].(string)
 	user.NickName = user.RawData["screen_name"].(string)
-	if user.RawData["email"] != nil {
-		user.Email = user.RawData["email"].(string)
-	}
+	user.Email = user.RawData["email"].(string)
 	user.Description = user.RawData["description"].(string)
 	user.AvatarURL = user.RawData["profile_image_url"].(string)
 	user.UserID = user.RawData["id_str"].(string)
